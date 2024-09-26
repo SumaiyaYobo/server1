@@ -18,21 +18,21 @@ const app = express();
 
 let globalLanguageCode = "en-US";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
-const languageMappings = {
-  portuguese: "pt-BR",
-  english: "en-US",
-  hindi: "hi-IN",
-  spanish: "es-ES",
-  french: "fr-FR",
-  german: "de-DE",
-  chinese: "zh-CN",
-  japanese: "ja-JP",
-  korean: "ko-KR",
-};
+// const languageMappings = {
+//   portuguese: "pt-BR",
+//   english: "en-US",
+//   hindi: "hi-IN",
+//   spanish: "es-ES",
+//   french: "fr-FR",
+//   german: "de-DE",
+//   chinese: "zh-CN",
+//   japanese: "ja-JP",
+//   korean: "ko-KR",
+// };
 
 app.use(cors());
 app.use(logger("dev"));
@@ -165,180 +165,180 @@ function updateGlobalLanguageCode(newLanguageCode) {
   updateRequestConfig();
 }
 
-console.log("Initial globalLanguageCode:", globalLanguageCode);
-console.log(
-  "Initial request.config.languageCode:",
-  request.config.languageCode
-);
+// console.log("Initial globalLanguageCode:", globalLanguageCode);
+// console.log(
+//   "Initial request.config.languageCode:",
+//   request.config.languageCode
+// );
 
-async function change_language(query) {
-  const prompt = `
-    You are a language detection assistant. Your job is to determine the target language based on a user query.
-    The query might include phrases like "Change the language to Portuguese" or "Switch back to Portuguese".
-    Your output should only be the language name in English, such as "Portuguese" or "Hindi".
-    Do not include any additional explanation or text in your response. Just return the language name in English.
-  `;
+// async function change_language(query) {
+//   const prompt = `
+//     You are a language detection assistant. Your job is to determine the target language based on a user query.
+//     The query might include phrases like "Change the language to Portuguese" or "Switch back to Portuguese".
+//     Your output should only be the language name in English, such as "Portuguese" or "Hindi".
+//     Do not include any additional explanation or text in your response. Just return the language name in English.
+//   `;
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: query },
-      ],
-      max_tokens: 100,
-      temperature: 0.0,
-    });
+//   try {
+//     const response = await openai.chat.completions.create({
+//       model: "gpt-4o",
+//       messages: [
+//         { role: "system", content: prompt },
+//         { role: "user", content: query },
+//       ],
+//       max_tokens: 100,
+//       temperature: 0.0,
+//     });
 
-    const detectedLanguage = response.choices[0]?.message?.content
-      ?.trim()
-      .toLowerCase();
+//     const detectedLanguage = response.choices[0]?.message?.content
+//       ?.trim()
+//       .toLowerCase();
 
-    if (!detectedLanguage) {
-      throw new Error("Failed to detect a valid language.");
-    }
+//     if (!detectedLanguage) {
+//       throw new Error("Failed to detect a valid language.");
+//     }
 
-    const languageCode = languageMappings[detectedLanguage];
+//     const languageCode = languageMappings[detectedLanguage];
 
-    if (!languageCode) {
-      throw new Error(
-        `Could not map the detected language "${detectedLanguage}" to a language code.`
-      );
-    }
+//     if (!languageCode) {
+//       throw new Error(
+//         `Could not map the detected language "${detectedLanguage}" to a language code.`
+//       );
+//     }
 
-    updateGlobalLanguageCode(languageCode);
-    return { languageCode };
-  } catch (error) {
-    return { error: error.message };
-  }
-}
+//     updateGlobalLanguageCode(languageCode);
+//     return { languageCode };
+//   } catch (error) {
+//     return { error: error.message };
+//   }
+// }
 
-async function answer_in_language(query) {
-  const prompt = `
-    Answer the following question in ${
-      globalLanguageCode.split("-")[0]
-    } in 1 or 2 lines only:
-    Question: "${query}"
-  `;
+// async function answer_in_language(query) {
+//   const prompt = `
+//     Answer the following question in ${
+//       globalLanguageCode.split("-")[0]
+//     } in 1 or 2 lines only:
+//     Question: "${query}"
+//   `;
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are a helpful assistant who always answers in the specified language.`,
-        },
-        { role: "user", content: prompt },
-      ],
-      max_tokens: 100,
-      temperature: 0.7,
-    });
+//   try {
+//     const response = await openai.chat.completions.create({
+//       model: "gpt-4o",
+//       messages: [
+//         {
+//           role: "system",
+//           content: `You are a helpful assistant who always answers in the specified language.`,
+//         },
+//         { role: "user", content: prompt },
+//       ],
+//       max_tokens: 100,
+//       temperature: 0.7,
+//     });
 
-    const answer = response.choices[0]?.message?.content?.trim();
+//     const answer = response.choices[0]?.message?.content?.trim();
 
-    if (!answer) {
-      throw new Error("Failed to generate an answer.");
-    }
+//     if (!answer) {
+//       throw new Error("Failed to generate an answer.");
+//     }
 
-    return { answer };
-  } catch (error) {
-    return { error: error.message };
-  }
-}
+//     return { answer };
+//   } catch (error) {
+//     return { error: error.message };
+//   }
+// }
 
-const tools = [
-  {
-    type: "function",
-    function: {
-      name: "change_language",
-      strict: true,
-      parameters: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description:
-              "Trigger this function when the user explicitly requests a change in the language setting. The query should contain the target language (e.g., 'Hindi', 'Spanish', 'French'). This function is ONLY used for setting or changing the language the conversation should continue in, not for handling queries in that language.",
-          },
-        },
-        required: ["query"],
-        additionalProperties: false,
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "answer_in_language",
-      strict: true,
-      parameters: {
-        type: "object",
-        properties: {
-          languageCode: {
-            type: "string",
-            description:
-              "The language code-country code in which the answer should be given (e.g., 'en-US' for English (US), 'hi-IN' for Hindi (India), 'es-ES' for Spanish (Spain)). This is determined based on the user's question language.",
-          },
-          query: {
-            type: "string",
-            description:
-              "The user's query or question that needs to be answered. This function should be triggered when the user asks a question or makes a request in any language. The query can be in any language, such as Hindi, Spanish, French, etc. The primary purpose of this function is to handle and respond to questions in the detected language.",
-          },
-        },
-        required: ["languageCode", "query"],
-        additionalProperties: false,
-      },
-    },
-  },
-];
+// const tools = [
+//   {
+//     type: "function",
+//     function: {
+//       name: "change_language",
+//       strict: true,
+//       parameters: {
+//         type: "object",
+//         properties: {
+//           query: {
+//             type: "string",
+//             description:
+//               "Trigger this function when the user explicitly requests a change in the language setting. The query should contain the target language (e.g., 'Hindi', 'Spanish', 'French'). This function is ONLY used for setting or changing the language the conversation should continue in, not for handling queries in that language.",
+//           },
+//         },
+//         required: ["query"],
+//         additionalProperties: false,
+//       },
+//     },
+//   },
+//   {
+//     type: "function",
+//     function: {
+//       name: "answer_in_language",
+//       strict: true,
+//       parameters: {
+//         type: "object",
+//         properties: {
+//           languageCode: {
+//             type: "string",
+//             description:
+//               "The language code-country code in which the answer should be given (e.g., 'en-US' for English (US), 'hi-IN' for Hindi (India), 'es-ES' for Spanish (Spain)). This is determined based on the user's question language.",
+//           },
+//           query: {
+//             type: "string",
+//             description:
+//               "The user's query or question that needs to be answered. This function should be triggered when the user asks a question or makes a request in any language. The query can be in any language, such as Hindi, Spanish, French, etc. The primary purpose of this function is to handle and respond to questions in the detected language.",
+//           },
+//         },
+//         required: ["languageCode", "query"],
+//         additionalProperties: false,
+//       },
+//     },
+//   },
+// ];
 
-app.post("/api/process", async (req, res) => {
-  const { text } = req.body;
-  if (!text) {
-    throw new Error("No text provided in the request body");
-  }
-  console.log(text);
-  let ans;
+// app.post("/api/process", async (req, res) => {
+//   const { text } = req.body;
+//   if (!text) {
+//     throw new Error("No text provided in the request body");
+//   }
+//   console.log(text);
+//   let ans;
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: text }],
-      tool_choice: "required",
-      tools: tools,
-    });
+//   try {
+//     const response = await openai.chat.completions.create({
+//       model: "gpt-4o",
+//       messages: [{ role: "user", content: text }],
+//       tool_choice: "required",
+//       tools: tools,
+//     });
 
-    const function_name =
-      response.choices[0]?.message?.tool_calls?.[0]?.function?.name;
-    const rawFunctionArguments =
-      response.choices[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    let function_arguments;
+//     const function_name =
+//       response.choices[0]?.message?.tool_calls?.[0]?.function?.name;
+//     const rawFunctionArguments =
+//       response.choices[0]?.message?.tool_calls?.[0]?.function?.arguments;
+//     let function_arguments;
 
-    if (typeof rawFunctionArguments === "string") {
-      function_arguments = JSON.parse(rawFunctionArguments);
-    } else {
-      function_arguments = rawFunctionArguments;
-    }
+//     if (typeof rawFunctionArguments === "string") {
+//       function_arguments = JSON.parse(rawFunctionArguments);
+//     } else {
+//       function_arguments = rawFunctionArguments;
+//     }
 
-    if (function_name === "change_language" && function_arguments?.query) {
-      const response2 = await change_language(function_arguments.query);
-      ans = response2.languageCode || response2.error;
-    } else if (
-      function_name === "answer_in_language" &&
-      function_arguments?.query
-    ) {
-      const response1 = await answer_in_language(function_arguments.query);
-      ans = response1.answer || response1.error;
-    } else {
-      throw new Error("Unhandled function or missing arguments.");
-    }
+//     if (function_name === "change_language" && function_arguments?.query) {
+//       const response2 = await change_language(function_arguments.query);
+//       ans = response2.languageCode || response2.error;
+//     } else if (
+//       function_name === "answer_in_language" &&
+//       function_arguments?.query
+//     ) {
+//       const response1 = await answer_in_language(function_arguments.query);
+//       ans = response1.answer || response1.error;
+//     } else {
+//       throw new Error("Unhandled function or missing arguments.");
+//     }
 
-    res.json({ result: ans });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+//     res.json({ result: ans });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 server.listen(8081, () => {
   console.log("WebSocket server listening on port 8081.");
