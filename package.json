@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "@google-cloud/speech": "^5.6.0",
+    "@google-cloud/storage": "^6.8.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0",
+    "openai": "^4.57.0",
+    "python-shell": "^5.0.0",
+    "socket-io": "^1.0.0",
+    "socket.io": "^4.5.4",
+    "websocket": "^1.0.34",
+    "ws": "^8.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node generate-key.js && nodemon index1.js -w"
+  }
+}
