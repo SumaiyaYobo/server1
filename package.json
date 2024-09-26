@@ -19,6 +19,6 @@
   },
   "scripts": {
     "start": "node index.js",
-    "dev": "node generate-key.js && nodemon index1.js -w"
+    "dev": "node generate-key.js && node index1.js -w"
   }
 }
